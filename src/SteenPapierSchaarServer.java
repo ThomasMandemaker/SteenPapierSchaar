@@ -9,7 +9,9 @@ import java.net.Socket;
 
 public class SteenPapierSchaarServer extends Thread implements QuizConstants
 {
-    private Question[] questionList = {new Question("Valenine's day is banned in Saudi Arabia.", true),
+
+    public static Question[] questionList = {
+            new Question("Valenine's day is banned in Saudi Arabia.", true),
             new Question("A slug\\'s blood is green.", true),
             new Question("Approximately one quarter of human bones are in the feet.", true),
             new Question("The total surface area of two human lungs is approximately 70 square metres.", true),
@@ -23,8 +25,13 @@ public class SteenPapierSchaarServer extends Thread implements QuizConstants
             new Question("No piece of square dry paper can be folded in half more than 7 times.", false),
             new Question("Chocolate affects a dog\\'s heart and nervous system; a few ounces are enough to kill a small dog.", true)
     };
+
+
+
+
     public void start()
     {
+
 
         new Thread(() ->
         {
@@ -65,6 +72,8 @@ public class SteenPapierSchaarServer extends Thread implements QuizConstants
             this.player1 = player1;
             this.player2 = player2;
         }
+
+
 
         public void run()
         {
