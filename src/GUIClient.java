@@ -144,7 +144,9 @@ public class GUIClient extends Application implements QuizConstants
 
     public void receiveAnswer() throws Exception
     {
+        System.out.println("Hier dan");
         boolean curAnswer = fromServer.readBoolean();
+        System.out.println("EN hier dan? ");
         Platform.runLater(() -> questions.setText(Question.questionList[++index].getQuistionString()));
         if(curAnswer)
             Platform.runLater(() -> counter.setText("Aantal goede antwoorden: " + ++count));

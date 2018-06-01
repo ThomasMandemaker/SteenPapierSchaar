@@ -91,16 +91,16 @@ public class QuizServer extends Thread implements QuizConstants
                     boolean answer = fromPlayer1.readBoolean();
 
                     System.out.println(answer);
-
-                    toPlayer1.writeBoolean(answer == question.getTrueFalse());
+                    boolean correct1 = answer == question.getTrueFalse();
+                    toPlayer1.writeBoolean(correct1);
 
 
                     Object object2 = fromPlayer2.readObject();
                     if(object2 instanceof Question)
                         question = (Question)object2;
-                    answer = fromPlayer2.readBoolean();
-
-                    toPlayer2.writeBoolean(answer == question.getTrueFalse());
+                    boolean answer2 = fromPlayer2.readBoolean();
+                    boolean correct2 = answer2 == question.getTrueFalse();
+                    toPlayer2.writeBoolean(correct2);
                 }
             }
             catch (Exception e)
