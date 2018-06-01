@@ -7,8 +7,10 @@ public class GUI extends JFrame implements ActionListener {
     JButton correct = new JButton("Goed");
     JButton wrong = new JButton("Fout");
     JLabel questions = new JLabel("Hier komt een vraag");
+    JLabel counter = new JLabel("goed beantwoord: ");
     private int count = 0;
     private int index = 0;
+    private boolean answer = false;
 
     public GUI() {
         setTitle("Quiz");
@@ -38,7 +40,6 @@ public class GUI extends JFrame implements ActionListener {
         questionpanel.add(questions);
         getContentPane().add(questionpanel, BorderLayout.NORTH);
 
-        JLabel counter = new JLabel("goed beantwoord: ");
         JPanel counterpanel = new JPanel();
         counterpanel.add(counter);
         getContentPane().add(counterpanel, BorderLayout.SOUTH);
@@ -48,11 +49,29 @@ public class GUI extends JFrame implements ActionListener {
 
 
     public void actionPerformed(ActionEvent e) {
-
+        answer = e.getActionCommand().equals(correct.getActionCommand());
         questions.setText(Question.questionList[index].getQuistionString());
         index++;
 
     }
 
+    public void updateScore()
+    {
+        counter.setText("goed beantwoord: " + count++);
+    }
 
+    public Question getCurrentQuestion()
+    {
+        return  Question.questionList[index];
+    }
+
+    public boolean getAnswer()
+    {
+        return answer;
+    }
+
+//    public static void main(String[] args)
+//    {
+//        new GUI();
+//    }
 }

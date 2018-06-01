@@ -1,4 +1,6 @@
-public class Question
+import java.io.Serializable;
+
+public class Question implements Serializable
 {
     private boolean trueFalse;
     private String quistionString;
