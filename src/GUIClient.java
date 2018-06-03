@@ -46,11 +46,12 @@ public class GUIClient extends Application
         BorderPane bottomPane = new BorderPane();
         BorderPane topPane = new BorderPane();
 
-        youWon = new Label();
+        youWon = new Label("");
         correct = new Button("Goed");
         wrong = new Button("Fout");
         questions = new Label(Question.questionList[0].getQuistionString());
         questions.setFont(Font.font("Garamond", 20));
+        questions.setMinSize(50, 100);
         counter = new Label("Goed beantwoord: ");
 
         correct.setPrefSize(100, 100);
@@ -91,7 +92,7 @@ public class GUIClient extends Application
         pane.setTop(topPane);
         pane.setBottom(bottomPane);
 
-        Scene scene = new Scene(pane, 500, 500);
+        Scene scene = new Scene(pane, 600, 500);
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -123,11 +124,11 @@ public class GUIClient extends Application
                     receiveAnswer();
                 }
 
-                while(!receivedScore)
-                {
+                //while(!receivedScore)
+                //{
                     receiveOthersScore();
 
-                }
+                //}
             } catch (Exception e)
             {
                 e.printStackTrace();
@@ -145,8 +146,8 @@ public class GUIClient extends Application
 
     public void sendAnswer() throws Exception
     {
-        if(index == 13)
-            return;
+//        if(index == 13)
+//            return;
         toServer.writeObject(Question.questionList[index]);
         toServer.writeBoolean(answerSelected);
         toServer.flush();
@@ -157,9 +158,12 @@ public class GUIClient extends Application
     {
         finishID = fromServer.readInt();
         boolean curAnswer = fromServer.readBoolean();
-        Platform.runLater(() -> questions.setText(Question.questionList[++index].getQuistionString()));
+        if (index < 12) {
+            Platform.runLater(() -> questions.setText(Question.questionList[index].getQuistionString()));
+            index++;
+        }
         if(curAnswer)
-            Platform.runLater(() -> counter.setText("Aantal goede antwoorden: " + ++count));
+            Platform.runLater(() -> counter.setText("Aantal goede antwoorden: " + (++count)));
         if(finishID == 1)
             gameFinished = true;
     }
@@ -168,9 +172,28 @@ public class GUIClient extends Application
     {
         int otherScore = fromServer.readInt();
         if(otherScore > count)
-            youWon.setText("You won by: " + (count - otherScore));
-        else
-            youWon.setText("You lost by: " + (count - otherScore));
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    youWon.setText("You lost by: " + ( otherScore - count)  );
+                }
+            });
+
+        else if(otherScore < count) {
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    youWon.setText("You won by: " + (count - otherScore));
+                }
+            });
+        } else if (otherScore == count){
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                youWon.setText("Draw by " + (count - otherScore));
+            }
+        });
+    }
         receivedScore = true;
     }
 
