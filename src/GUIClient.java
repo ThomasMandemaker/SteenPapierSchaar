@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -16,7 +17,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class GUIClient extends Application implements QuizConstants
+public class GUIClient extends Application
 {
     private static ObjectInputStream fromServer;
     private static ObjectOutputStream toServer;
@@ -25,6 +26,10 @@ public class GUIClient extends Application implements QuizConstants
     Button wrong;
     Label questions;
     Label counter;
+    Label youWon;
+
+    private int finishID = 0;
+    private boolean receivedScore = false;
 
     private boolean gameFinished = false;
     private boolean waiting = true;
@@ -38,13 +43,13 @@ public class GUIClient extends Application implements QuizConstants
     public void start(Stage primaryStage)
     {
         BorderPane pane = new BorderPane();
-
+        BorderPane bottomPane = new BorderPane();
         BorderPane topPane = new BorderPane();
 
-
+        youWon = new Label();
         correct = new Button("Goed");
         wrong = new Button("Fout");
-        questions = new Label("Insert vraag hier");
+        questions = new Label(Question.questionList[0].getQuistionString());
         questions.setFont(Font.font("Garamond", 20));
         counter = new Label("Goed beantwoord: ");
 
@@ -78,10 +83,13 @@ public class GUIClient extends Application implements QuizConstants
         topPane.setCenter(questions);
         //topPane.setRight(wrong);
 
+        bottomPane.setLeft(counter);
+        bottomPane.setRight(youWon);
+
         pane.setRight(wrong);
         pane.setLeft(correct);
         pane.setTop(topPane);
-        pane.setBottom(counter);
+        pane.setBottom(bottomPane);
 
         Scene scene = new Scene(pane, 500, 500);
         primaryStage.setScene(scene);
@@ -97,6 +105,7 @@ public class GUIClient extends Application implements QuizConstants
 
 
             toServer = new ObjectOutputStream(socket.getOutputStream());
+            toServer.flush();
             fromServer = new ObjectInputStream(socket.getInputStream());
         } catch (Exception e)
         {
@@ -105,19 +114,19 @@ public class GUIClient extends Application implements QuizConstants
 
         new Thread(() ->
         {
-            System.out.println("PLESEWORKMYDUDE");
             try
             {
-                int player = fromServer.readInt();
-                System.out.println("GOTEEM");
-                System.out.println(player);
-
+                //int player = fromServer.readInt();
                 while (!gameFinished)
                 {
-                    System.out.println("While loop reached");
                     waitForAnswer();
-                    //sendAnswer();
                     receiveAnswer();
+                }
+
+                while(!receivedScore)
+                {
+                    receiveOthersScore();
+
                 }
             } catch (Exception e)
             {
@@ -131,25 +140,38 @@ public class GUIClient extends Application implements QuizConstants
         while (waiting)
             Thread.sleep(100);
 
-        System.out.println("WaitForAnswer Reached");
         waiting = true;
     }
 
     public void sendAnswer() throws Exception
     {
-        System.out.println(Question.questionList[5]);
+        if(index == 13)
+            return;
         toServer.writeObject(Question.questionList[index]);
         toServer.writeBoolean(answerSelected);
+        toServer.flush();
+        waiting = false;
     }
 
     public void receiveAnswer() throws Exception
     {
-        System.out.println("Hier dan");
+        finishID = fromServer.readInt();
         boolean curAnswer = fromServer.readBoolean();
-        System.out.println("EN hier dan? ");
         Platform.runLater(() -> questions.setText(Question.questionList[++index].getQuistionString()));
         if(curAnswer)
             Platform.runLater(() -> counter.setText("Aantal goede antwoorden: " + ++count));
+        if(finishID == 1)
+            gameFinished = true;
+    }
+
+    public void receiveOthersScore() throws Exception
+    {
+        int otherScore = fromServer.readInt();
+        if(otherScore > count)
+            youWon.setText("You won by: " + (count - otherScore));
+        else
+            youWon.setText("You lost by: " + (count - otherScore));
+        receivedScore = true;
     }
 
     public void handleClick(EventTarget e) throws Exception
@@ -158,7 +180,6 @@ public class GUIClient extends Application implements QuizConstants
             answerSelected = true;
         else
             answerSelected = false;
-        waiting = false;
         sendAnswer();
     }
 }
